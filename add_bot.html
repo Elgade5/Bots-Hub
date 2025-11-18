@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Your Bot - Bots Hub</title>
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='Bots Hub Logo.png') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header>
+        <nav class="navbar">
+            <a href="{{ url_for('index') }}" class="logo">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" />
+                </svg>
+                Bots Hub
+            </a>
+            <div class="nav-links">
+                {% if user %}
+                    <div class="user-info">
+                        <img src="https://cdn.discordapp.com/avatars/{{ user.id }}/{{ user.avatar }}.png" alt="Avatar" class="user-avatar">
+                        <span>{{ user.username }}</span>
+                    </div>
+                    <a href="{{ url_for('index') }}">Back to Home</a>
+                {% endif %}
+            </div>
+        </nav>
+    </header>
+
+    <div class="container">
+        <div class="form-container wizard-container">
+            <div class="wizard-progress">
+                <div class="step-dot active" data-step="1">1</div>
+                <div class="step-line"></div>
+                <div class="step-dot" data-step="2">2</div>
+                <div class="step-line"></div>
+                <div class="step-dot" data-step="3">3</div>
+                <div class="step-line"></div>
+                <div class="step-dot" data-step="4">4</div>
+            </div>
+
+            <form method="POST" id="addBotForm">
+                
+                <div class="wizard-step active" id="step-1">
+                    <h2>Identity</h2>
+                    <p class="step-desc">Let's find your bot on Discord.</p>
+
+                    <label>Bot ID *</label>
+                    <input type="text" id="bot_id" name="bot_id" placeholder="Enter Bot ID" required>
+                    <div id="bot-preview" style="display: none; margin-top: 15px; padding: 15px; background: rgba(255,255,255,0.05); border-radius: 8px; align-items: center; gap: 15px;">
+                        <img id="preview-avatar" src="" style="width: 50px; height: 50px; border-radius: 50%;">
+                        <div>
+                            <h3 id="preview-name" style="margin: 0; font-size: 1.1rem;"></h3>
+                            <span style="color: var(--success); font-size: 0.9rem;">Bot Found!</span>
+                        </div>
+                    </div>
+                    <p id="id-error" style="color: var(--error); display: none; margin-top: 5px;"></p>
+
+                    <div class="wizard-buttons">
+                        <button type="button" class="btn btn-secondary" onclick="window.location.href='{{ url_for('index') }}'">Cancel</button>
+                        <button type="button" class="btn" onclick="validateStep1()">Next Step</button>
+                    </div>
+                </div>
+
+                <div class="wizard-step" id="step-2">
+                    <h2>Descriptions</h2>
+                    <p class="step-desc">Tell us what your bot does.</p>
+
+                    <label>Short Description *</label>
+                    <input type="text" id="short_description" name="short_description" maxlength="120" placeholder="One line summary" required>
+                    <p style="color: var(--text-secondary); font-size: 12px; text-align: right;" id="char-count">120 left</p>
+
+                    <label>Full Description *</label>
+                    <textarea id="description" name="description" rows="8" placeholder="Detailed features (supports Markdown)..." required></textarea>
+
+                    <div class="wizard-buttons">
+                        <button type="button" class="btn btn-secondary" onclick="prevStep(2)">Back</button>
+                        <button type="button" class="btn" onclick="nextStep(2)">Next Step</button>
+                    </div>
+                </div>
+
+                <div class="wizard-step" id="step-3">
+                    <h2>Configuration</h2>
+                    <p class="step-desc">How do users invite and use your bot?</p>
+
+                    <label>Command Prefix</label>
+                    <input type="text" name="prefix" value="!" placeholder="e.g. ! or /">
+
+                    <label>Invite Link *</label>
+                    <input type="url" name="invite_link" placeholder="https://discord.com/api/oauth2/..." required>
+                    
+                    <label>Website (Optional)</label>
+                    <input type="url" name="website" placeholder="https://yourbot.com">
+
+                    <label>Support Server (Optional)</label>
+                    <input type="url" name="support_server" placeholder="https://discord.gg/...">
+
+                    <div class="wizard-buttons">
+                        <button type="button" class="btn btn-secondary" onclick="prevStep(3)">Back</button>
+                        <button type="button" class="btn" onclick="nextStep(3)">Next Step</button>
+                    </div>
+                </div>
+
+                <div class="wizard-step" id="step-4">
+                    <h2>Categories</h2>
+                    <p class="step-desc">Select tags to help users find your bot.</p>
+
+                    <div class="tags-list" style="max-height: 300px; overflow-y: auto;">
+                        {% for tag in tags %}
+                            <label>
+                                <input type="checkbox" name="tags" value="{{ tag }}">
+                                {{ tag }}
+                            </label>
+                        {% endfor %}
+                    </div>
+
+                    <div class="wizard-buttons">
+                        <button type="button" class="btn btn-secondary" onclick="prevStep(4)">Back</button>
+                        <button type="submit" class="btn btn-success">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="width: 18px;">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                            </svg>
+                            Submit Bot
+                        </button>
+                    </div>
+                </div>
+
+            </form>
+        </div>
+    </div>
+
+    <script>
+        let currentStep = 1;
+
+        // Validation Step 1 (Bot ID)
+        async function validateStep1() {
+            const btn = document.querySelector('#step-1 button.btn');
+            const input = document.getElementById('bot_id');
+            const errorMsg = document.getElementById('id-error');
+            const preview = document.getElementById('bot-preview');
+            const prevImg = document.getElementById('preview-avatar');
+            const prevName = document.getElementById('preview-name');
+
+            if(!input.value) {
+                errorMsg.textContent = "Please enter an ID";
+                errorMsg.style.display = 'block';
+                return;
+            }
+
+            // Loading state
+            btn.textContent = "Searching...";
+            btn.disabled = true;
+            errorMsg.style.display = 'none';
+
+            try {
+                const response = await fetch('/api/fetch-bot-info/' + encodeURIComponent(input.value));
+                const data = await response.json();
+
+                if (response.ok) {
+                    // Success: Show preview
+                    preview.style.display = 'flex';
+                    prevImg.src = data.avatar_url;
+                    prevName.textContent = data.username;
+                    
+                    // Wait a moment then go to next step
+                    setTimeout(() => {
+                        nextStep(1);
+                        btn.textContent = "Next Step";
+                        btn.disabled = false;
+                    }, 800);
+                } else {
+                    throw new Error(data.error || 'Bot not found');
+                }
+            } catch (err) {
+                errorMsg.textContent = err.message;
+                errorMsg.style.display = 'block';
+                preview.style.display = 'none';
+                btn.textContent = "Next Step";
+                btn.disabled = false;
+            }
+        }
+
+        function nextStep(step) {
+            // Simple validation for other steps
+            if (step === 2) {
+                if(!document.getElementById('short_description').value || !document.getElementById('description').value) {
+                    alert("Please fill in all required fields.");
+                    return;
+                }
+            }
+            if (step === 3) {
+                const invite = document.querySelector('input[name="invite_link"]');
+                if(!invite.value) {
+                    alert("Invite link is required.");
+                    return;
+                }
+            }
+
+            document.getElementById(`step-${step}`).classList.remove('active');
+            document.querySelector(`.step-dot[data-step="${step}"]`).classList.add('completed');
+            
+            currentStep++;
+            document.getElementById(`step-${currentStep}`).classList.add('active');
+            document.querySelector(`.step-dot[data-step="${currentStep}"]`).classList.add('active');
+        }
+
+        function prevStep(step) {
+            document.getElementById(`step-${step}`).classList.remove('active');
+            document.querySelector(`.step-dot[data-step="${step}"]`).classList.remove('active');
+            
+            currentStep--;
+            document.getElementById(`step-${currentStep}`).classList.add('active');
+        }
+
+        // Char counter
+        document.getElementById('short_description').addEventListener('input', function(e) {
+            document.getElementById('char-count').textContent = (120 - e.target.value.length) + " left";
+        });
+    </script>
+</body>
+</html>

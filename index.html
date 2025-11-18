@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bots Hub - Find the Best Discord Bots</title>
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='Bots Hub Logo.png') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Navigation -->
+    <header>
+        <nav class="navbar">
+            <a href="{{ url_for('index') }}" class="logo">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" />
+                </svg>
+                Bots Hub
+            </a>
+            <div class="nav-links">
+                {% if user %}
+                    <div class="user-info">
+                        <img src="https://cdn.discordapp.com/avatars/{{ user.id }}/{{ user.avatar }}.png" 
+                             alt="Avatar" class="user-avatar">
+                        <span>{{ user.username }}</span>
+                        {% if is_admin %}
+                            <span class="admin-badge">Admin</span>
+                        {% endif %}
+                    </div>
+                    <a href="{{ url_for('add_bot') }}">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                        </svg>
+                        Add Bot
+                    </a>
+                    <a href="{{ url_for('logout') }}">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                        </svg>
+                        Logout
+                    </a>
+                {% else %}
+                    <a href="{{ url_for('login') }}">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+                        </svg>
+                        Login with Discord
+                    </a>
+                {% endif %}
+            </div>
+        </nav>
+    </header>
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="flash-messages">
+                {% for category, message in messages %}
+                    <div class="flash {{ category }}">{{ message }}</div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    <div class="container">
+        <!-- Hero Section -->
+        <div class="hero">
+            <h1>Discover Amazing Discord Bots</h1>
+            <p>Find the perfect bot to enhance your Discord server experience</p>
+            {% if not user %}
+                <a href="{{ url_for('login') }}" class="btn">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    </svg>
+                    Get Started
+                </a>
+            {% else %}
+                <a href="{{ url_for('add_bot') }}" class="btn">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                    </svg>
+                    Add Your Bot
+                </a>
+            {% endif %}
+        </div>
+
+        <!-- Search & Filters -->
+        <div class="search-filters">
+            <div class="search-box">
+                <form method="GET" action="{{ url_for('index') }}">
+                    <input type="text" 
+                           name="search" 
+                           placeholder="Search bots..." 
+                           value="{{ search_query or '' }}">
+                </form>
+            </div>
+            
+            <form method="GET" action="{{ url_for('index') }}" style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                <input type="hidden" name="search" value="{{ search_query or '' }}">
+                
+                <select name="tag" onchange="this.form.submit()">
+                    <option value="">All Categories</option>
+                    <option value="Moderation" {% if filter_tag == 'Moderation' %}selected{% endif %}>Moderation</option>
+                    <option value="Music" {% if filter_tag == 'Music' %}selected{% endif %}>Music</option>
+                    <option value="Fun" {% if filter_tag == 'Fun' %}selected{% endif %}>Fun</option>
+                    <option value="Utility" {% if filter_tag == 'Utility' %}selected{% endif %}>Utility</option>
+                    <option value="Games" {% if filter_tag == 'Games' %}selected{% endif %}>Games</option>
+                    <option value="Economy" {% if filter_tag == 'Economy' %}selected{% endif %}>Economy</option>
+                    <option value="Leveling" {% if filter_tag == 'Leveling' %}selected{% endif %}>Leveling</option>
+                    <option value="Social" {% if filter_tag == 'Social' %}selected{% endif %}>Social</option>
+                    <option value="AI" {% if filter_tag == 'AI' %}selected{% endif %}>AI</option>
+                    <option value="Multipurpose" {% if filter_tag == 'Multipurpose' %}selected{% endif %}>Multipurpose</option>
+                </select>
+                
+                <select name="sort" onchange="this.form.submit()">
+                    <option value="newest" {% if sort_by == 'newest' %}selected{% endif %}>Newest First</option>
+                    <option value="oldest" {% if sort_by == 'oldest' %}selected{% endif %}>Oldest First</option>
+                    <option value="popular" {% if sort_by == 'popular' %}selected{% endif %}>Most Popular</option>
+                </select>
+            </form>
+        </div>
+
+        <!-- Bots Grid -->
+        <h2 style="font-size: 2rem; margin-bottom: 1.5rem;">
+            {% if filter_tag %}
+                {{ filter_tag }} Bots
+            {% elif search_query %}
+                Search Results for "{{ search_query }}"
+            {% else %}
+                Featured Bots
+            {% endif %}
+        </h2>
+
+        {% if bots %}
+            <div class="bots-grid">
+                {% for bot in bots %}
+                    <a href="{{ url_for('bot_detail', bot_id=bot.id) }}" class="bot-card">
+                        <div class="bot-banner" {% if bot.banner_url %}style="background: url('{{ bot.banner_url }}') center/cover;"{% endif %}></div>
+                        <div class="bot-card-content">
+                            {% if bot.avatar_url %}
+                                <img src="{{ bot.avatar_url }}" alt="{{ bot.name }}" class="bot-avatar">
+                            {% endif %}
+                            
+                            <div class="bot-header">
+                                <h3>
+                                    {{ bot.name }}
+                                    {% if bot.certified %}
+                                        <span class="certified-badge">
+                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" style="width: 14px; height: 14px;">
+                                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                                            </svg>
+                                            Certified
+                                        </span>
+                                    {% endif %}
+                                </h3>
+                                <p class="bot-short-desc">
+                                    {{ bot.short_description or bot.description[:100] + '...' }}
+                                </p>
+                            </div>
+                            
+                            <div class="tags">
+                                {% for tag in bot.tags[:3] %}
+                                    <span class="tag">{{ tag }}</span>
+                                {% endfor %}
+                                {% if bot.tags|length > 3 %}
+                                    <span class="tag">+{{ bot.tags|length - 3 }}</span>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="bot-stats">
+                                <div class="stat">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" />
+                                    </svg>
+                                    <strong>{{ bot.upvotes or 0 }}</strong>
+                                    <span>votes</span>
+                                </div>
+                                {% if bot.server_count > 0 %}
+                                    <div class="stat">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01" />
+                                        </svg>
+                                        <strong>{{ bot.server_count }}</strong>
+                                        <span>servers</span>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </a>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="empty-state">
+                <h3>No bots found</h3>
+                <p>Try adjusting your search or filters</p>
+                {% if user %}
+                    <a href="{{ url_for('add_bot') }}" class="btn" style="margin-top: 1rem;">Add the First Bot</a>
+                {% endif %}
+            </div>
+        {% endif %}
+    </div>
+
+    <script>
+        // Auto-hide flash messages after 5 seconds
+        setTimeout(() => {
+            const flashMessages = document.querySelectorAll('.flash');
+            flashMessages.forEach(flash => {
+                flash.style.animation = 'slideOut 0.3s forwards';
+                setTimeout(() => flash.remove(), 300);
+            });
+        }, 5000);
+    </script>
+</body>
+</html>
